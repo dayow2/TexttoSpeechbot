@@ -8,8 +8,14 @@ app = Flask(__name__)
 
 # Get tokens from environment variables
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
-PORT = int(os.environ.get('PORT', 5000)) 
-WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
+
+# Safeguard: Fallback to Render's default domain if WEBHOOK_URL is missing
+RENDER_EXTERNAL_URL = os.environ.get('RENDER_EXTERNAL_URL')
+WEBHOOK_URL = os.environ.get('WEBHOOK_URL', RENDER_EXTERNAL_URL)
+
+# Ensure the webhook URL has a trailing slash
+if WEBHOOK_URL and not WEBHOOK_URL.endswith('/'):
+    WEBHOOK_URL += '/'
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -48,9 +54,16 @@ def getMessage():
 
 @app.route("/")
 def webhook():
+    if not BOT_TOKEN:
+        return "Error: BOT_TOKEN environment variable is missing!", 500
+    if not WEBHOOK_URL:
+        return "Error: WEBHOOK_URL environment variable is missing!", 500
+        
     bot.remove_webhook()
     bot.set_webhook(url=WEBHOOK_URL + BOT_TOKEN)
-    return "Bot is running and Webhook is set!", 200
+    return f"Bot is running and Webhook is set to: {WEBHOOK_URL}", 200
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=PORT)
+    # Render assigns a port dynamically via the PORT environment variable
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host="0.0.0.0", port=port)
