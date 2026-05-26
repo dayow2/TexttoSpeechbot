@@ -6,11 +6,10 @@ from gtts import gTTS
 # Initialize Flask app
 app = Flask(__name__)
 
-# Get tokens from environment variables (set these in Render)
+# Get tokens from environment variables
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
-# Render provides a PORT environment variable automatically
 PORT = int(os.environ.get('PORT', 5000)) 
-WEBHOOK_URL = os.environ.get('WEBHOOK_URL') # We will get this from Render later
+WEBHOOK_URL = os.environ.get('WEBHOOK_URL')
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
@@ -54,5 +53,4 @@ def webhook():
     return "Bot is running and Webhook is set!", 200
 
 if __name__ == "__main__":
-    # Start Flask server
     app.run(host="0.0.0.0", port=PORT)
